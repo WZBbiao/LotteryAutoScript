@@ -497,22 +497,17 @@ module.exports = Object.freeze({
         APIs: [],
 
         /**
-         * 默认为硅基流动，可以修改为其他AI服务
+         * OpenAI ChatGPT API 配置
          */
         ai_comments_parm: {
-            url: 'https://api.siliconflow.cn/v1/chat/completions',
+            url: 'https://api.openai.com/v1/chat/completions',
             body: {
-                'model': 'Qwen/Qwen3-32B',
-                'max_tokens': 512,
-                'thinking_budget': 4096,
-                'min_p': 0.05,
-                'temperature': 0.7,
-                'top_p': 0.7,
-                'top_k': 50,
-                'frequency_penalty': 0.5,
+                'model': 'gpt-3.5-turbo',
+                'max_tokens': 100,
+                'temperature': 0.8,
                 'n': 1,
             },
-            prompt: '请根据以下内容直接生成一条简短评论，无需说明信息，且不包含任何敏感词汇。'
+            prompt: '请根据以下抽奖动态内容，生成一条自然、简短、符合B站风格的评论。要求：1)不超过30字 2)表达期待和支持 3)不要使用敏感词 4)语气轻松友好。直接输出评论内容，不要任何解释。'
         },
 
         save_lottery_info_to_file: true,
