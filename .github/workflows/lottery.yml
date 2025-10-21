@@ -1,0 +1,305 @@
+name: B站抽奖自动脚本
+
+on:
+  schedule:
+    # 每天北京时间 8:00 运行（UTC 0:00）
+    - cron: '0 0 * * *'
+    # 每天北京时间 20:00 检查中奖（UTC 12:00）
+    - cron: '0 12 * * *'
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      mode:
+        description: '运行模式'
+        required: true
+        default: 'start'
+        type: choice
+        options:
+          - start
+          - check
+          - clear
+
+jobs:
+  lottery-start:
+    name: 启动抽奖
+    runs-on: ubuntu-latest
+    # 只在定时任务的第一个 cron 或手动触发 start 时运行
+    if: github.event.schedule == '0 0 * * *' || github.event.inputs.mode == 'start' || github.event_name == 'workflow_dispatch' && github.event.inputs.mode == ''
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js 环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 创建 env.js 配置文件
+      run: |
+        cat > env.js << 'EOF'
+        module.exports = Object.freeze({
+            account_parm: {
+                COOKIE: process.env.COOKIE || '',
+                NOTE: '账号1',
+                NUMBER: 1,
+                CLEAR: true,
+                ACCOUNT_UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                ENABLE_CHAT_CAPTCHA_OCR: false,
+                CHAT_CAPTCHA_OCR_URL: '',
+                ENABLE_AI_COMMENTS: false,
+                ENABLE_MULTIPLE_ACCOUNT: false,
+                MULTIPLE_ACCOUNT_PARM: '',
+                LOTTERY_LOG_LEVEL: 3,
+                NOT_GO_LOTTERY: ''
+            },
+            multiple_account_parm: [],
+            push_parm: {
+                SCKEY: '',
+                SENDKEY: process.env.SENDKEY || '',
+                QQ_SKEY: '',
+                QQ_MODE: '',
+                BARK_PUSH: '',
+                BARK_SOUND: '',
+                PUSHDEER_URL: '',
+                PUSHDEER_PUSHKEY: '',
+                TG_BOT_TOKEN: process.env.TG_BOT_TOKEN || '',
+                TG_USER_ID: process.env.TG_USER_ID || '',
+                TG_PROXY_HOST: '',
+                TG_PROXY_PORT: '',
+                DD_BOT_TOKEN: '',
+                DD_BOT_SECRET: '',
+                QYWX_AM: '',
+                QYWX_KEY: '',
+                IGOT_PUSH_KEY: '',
+                PUSH_PLUS_TOKEN: '',
+                PUSH_PLUS_USER: '',
+                QMSG_KEY: '',
+                QMSG_QQ: '',
+                SMTP_HOST: '',
+                SMTP_PORT: '',
+                SMTP_USER: '',
+                SMTP_PASS: '',
+                SMTP_TO_USER: '',
+                GOTIFY_URL: '',
+                GOTIFY_APPKEY: '',
+                FEISHU_WEBHOOK: process.env.FEISHU_WEBHOOK || ''
+            },
+            ai_parm: {
+                AI_API_KEY: process.env.AI_API_KEY || ''
+            }
+        });
+        EOF
+      env:
+        COOKIE: ${{ secrets.COOKIE }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        SENDKEY: ${{ secrets.SENDKEY }}
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        TG_USER_ID: ${{ secrets.TG_USER_ID }}
+        AI_API_KEY: ${{ secrets.AI_API_KEY }}
+
+    - name: 创建 my_config.js 配置文件
+      run: cp my_config.example.js my_config.js
+
+    - name: 运行抽奖脚本
+      run: npm run start
+      env:
+        COOKIE: ${{ secrets.COOKIE }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        SENDKEY: ${{ secrets.SENDKEY }}
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        TG_USER_ID: ${{ secrets.TG_USER_ID }}
+        AI_API_KEY: ${{ secrets.AI_API_KEY }}
+
+    - name: 上传运行日志
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: lottery-logs-${{ github.run_number }}
+        path: |
+          *.log
+          lottery_dyids/*.txt
+        retention-days: 7
+
+  lottery-check:
+    name: 检查中奖
+    runs-on: ubuntu-latest
+    # 只在定时任务的第二个 cron 或手动触发 check 时运行
+    if: github.event.schedule == '0 12 * * *' || github.event.inputs.mode == 'check'
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js 环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 创建 env.js 配置文件
+      run: |
+        cat > env.js << 'EOF'
+        module.exports = Object.freeze({
+            account_parm: {
+                COOKIE: process.env.COOKIE || '',
+                NOTE: '账号1',
+                NUMBER: 1,
+                CLEAR: true,
+                ACCOUNT_UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                ENABLE_CHAT_CAPTCHA_OCR: false,
+                CHAT_CAPTCHA_OCR_URL: '',
+                ENABLE_AI_COMMENTS: false,
+                ENABLE_MULTIPLE_ACCOUNT: false,
+                MULTIPLE_ACCOUNT_PARM: '',
+                LOTTERY_LOG_LEVEL: 3,
+                NOT_GO_LOTTERY: ''
+            },
+            multiple_account_parm: [],
+            push_parm: {
+                SCKEY: '',
+                SENDKEY: process.env.SENDKEY || '',
+                QQ_SKEY: '',
+                QQ_MODE: '',
+                BARK_PUSH: '',
+                BARK_SOUND: '',
+                PUSHDEER_URL: '',
+                PUSHDEER_PUSHKEY: '',
+                TG_BOT_TOKEN: process.env.TG_BOT_TOKEN || '',
+                TG_USER_ID: process.env.TG_USER_ID || '',
+                TG_PROXY_HOST: '',
+                TG_PROXY_PORT: '',
+                DD_BOT_TOKEN: '',
+                DD_BOT_SECRET: '',
+                QYWX_AM: '',
+                QYWX_KEY: '',
+                IGOT_PUSH_KEY: '',
+                PUSH_PLUS_TOKEN: '',
+                PUSH_PLUS_USER: '',
+                QMSG_KEY: '',
+                QMSG_QQ: '',
+                SMTP_HOST: '',
+                SMTP_PORT: '',
+                SMTP_USER: '',
+                SMTP_PASS: '',
+                SMTP_TO_USER: '',
+                GOTIFY_URL: '',
+                GOTIFY_APPKEY: '',
+                FEISHU_WEBHOOK: process.env.FEISHU_WEBHOOK || ''
+            },
+            ai_parm: {
+                AI_API_KEY: process.env.AI_API_KEY || ''
+            }
+        });
+        EOF
+      env:
+        COOKIE: ${{ secrets.COOKIE }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        SENDKEY: ${{ secrets.SENDKEY }}
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        TG_USER_ID: ${{ secrets.TG_USER_ID }}
+
+    - name: 创建 my_config.js 配置文件
+      run: cp my_config.example.js my_config.js
+
+    - name: 检查中奖
+      run: npm run check
+      env:
+        COOKIE: ${{ secrets.COOKIE }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        SENDKEY: ${{ secrets.SENDKEY }}
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        TG_USER_ID: ${{ secrets.TG_USER_ID }}
+
+  lottery-clear:
+    name: 清理动态和关注
+    runs-on: ubuntu-latest
+    # 只在手动触发 clear 时运行
+    if: github.event.inputs.mode == 'clear'
+
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+
+    - name: 设置 Node.js 环境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 创建 env.js 配置文件
+      run: |
+        cat > env.js << 'EOF'
+        module.exports = Object.freeze({
+            account_parm: {
+                COOKIE: process.env.COOKIE || '',
+                NOTE: '账号1',
+                NUMBER: 1,
+                CLEAR: true,
+                ACCOUNT_UA: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                ENABLE_CHAT_CAPTCHA_OCR: false,
+                CHAT_CAPTCHA_OCR_URL: '',
+                ENABLE_AI_COMMENTS: false,
+                ENABLE_MULTIPLE_ACCOUNT: false,
+                MULTIPLE_ACCOUNT_PARM: '',
+                LOTTERY_LOG_LEVEL: 3,
+                NOT_GO_LOTTERY: ''
+            },
+            multiple_account_parm: [],
+            push_parm: {
+                SCKEY: '',
+                SENDKEY: process.env.SENDKEY || '',
+                QQ_SKEY: '',
+                QQ_MODE: '',
+                BARK_PUSH: '',
+                BARK_SOUND: '',
+                PUSHDEER_URL: '',
+                PUSHDEER_PUSHKEY: '',
+                TG_BOT_TOKEN: process.env.TG_BOT_TOKEN || '',
+                TG_USER_ID: process.env.TG_USER_ID || '',
+                TG_PROXY_HOST: '',
+                TG_PROXY_PORT: '',
+                DD_BOT_TOKEN: '',
+                DD_BOT_SECRET: '',
+                QYWX_AM: '',
+                QYWX_KEY: '',
+                IGOT_PUSH_KEY: '',
+                PUSH_PLUS_TOKEN: '',
+                PUSH_PLUS_USER: '',
+                QMSG_KEY: '',
+                QMSG_QQ: '',
+                SMTP_HOST: '',
+                SMTP_PORT: '',
+                SMTP_USER: '',
+                SMTP_PASS: '',
+                SMTP_TO_USER: '',
+                GOTIFY_URL: '',
+                GOTIFY_APPKEY: '',
+                FEISHU_WEBHOOK: process.env.FEISHU_WEBHOOK || ''
+            },
+            ai_parm: {
+                AI_API_KEY: process.env.AI_API_KEY || ''
+            }
+        });
+        EOF
+      env:
+        COOKIE: ${{ secrets.COOKIE }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+
+    - name: 创建 my_config.js 配置文件
+      run: cp my_config.example.js my_config.js
+
+    - name: 清理动态和关注
+      run: npm run clear
+      env:
+        COOKIE: ${{ secrets.COOKIE }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
