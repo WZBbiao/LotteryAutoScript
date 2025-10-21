@@ -19,17 +19,16 @@ on:
           - check
           - clear
 
-# 并发控制：同一时间只运行一个实例
-concurrency:
-  group: lottery-script
-  cancel-in-progress: false  # 不取消正在运行的任务，新任务等待
-
 jobs:
   lottery:
     name: 抽奖和中奖检查
     runs-on: ubuntu-latest
     # 运行抽奖和检查中奖（除了 clear 模式）
     if: github.event_name == 'schedule' || github.event.inputs.mode != 'clear'
+    # 并发控制：抽奖任务独立控制
+    concurrency:
+      group: lottery-start
+      cancel-in-progress: false
 
     steps:
     - name: 检出代码
@@ -146,6 +145,10 @@ jobs:
     runs-on: ubuntu-latest
     # 只在手动触发 clear 时运行
     if: github.event.inputs.mode == 'clear'
+    # 并发控制：清理任务独立控制
+    concurrency:
+      group: lottery-clear
+      cancel-in-progress: false
 
     steps:
     - name: 检出代码
