@@ -497,16 +497,15 @@ module.exports = Object.freeze({
         APIs: [],
 
         /**
-         * OpenAI GPT-4.1 API 配置
-         * 模型选择：gpt-4.1-mini（推荐，性价比高）或 gpt-4.1（更智能但贵5倍）
+         * OpenAI GPT-4o API 配置
+         * 模型：gpt-4o-mini（推荐，性价比高且稳定）
          */
         ai_comments_parm: {
             url: 'https://api.openai.com/v1/chat/completions',
             body: {
-                'model': 'gpt-4.1-mini',
+                'model': 'gpt-4o-mini',
                 'max_tokens': 100,
                 'temperature': 0.8,
-                'n': 1,
             },
             prompt: '请根据以下抽奖动态内容，生成一条自然、简短、符合B站风格的评论。要求：1)不超过30字 2)表达期待和支持 3)不要使用敏感词 4)语气轻松友好。直接输出评论内容，不要任何解释。'
         },
