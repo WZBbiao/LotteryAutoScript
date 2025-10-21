@@ -21,10 +21,10 @@ on:
 
 jobs:
   lottery:
-    name: 抽奖任务
+    name: 抽奖和中奖检查
     runs-on: ubuntu-latest
-    # 定时任务总是运行抽奖，手动触发可选择模式
-    if: github.event_name == 'schedule' || github.event.inputs.mode == 'start' || github.event.inputs.mode == ''
+    # 运行抽奖和检查中奖（除了 clear 模式）
+    if: github.event_name == 'schedule' || github.event.inputs.mode != 'clear'
 
     steps:
     - name: 检出代码
@@ -106,6 +106,7 @@ jobs:
       run: cp my_config.example.js my_config.js
 
     - name: 运行抽奖脚本
+      if: github.event_name == 'schedule' || github.event.inputs.mode == 'start' || github.event.inputs.mode == ''
       run: npm run start
       env:
         COOKIE: ${{ secrets.COOKIE }}
@@ -115,7 +116,7 @@ jobs:
         TG_USER_ID: ${{ secrets.TG_USER_ID }}
         AI_API_KEY: ${{ secrets.AI_API_KEY }}
 
-    - name: 检查中奖（每天20:00北京时间或手动触发）
+    - name: 检查中奖
       if: github.event.schedule == '0 12 * * *' || github.event.inputs.mode == 'check'
       run: npm run check
       env:
