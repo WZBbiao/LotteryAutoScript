@@ -8,6 +8,5 @@ dist/
 .env
 *.log
 *.zip
-package-lock.json
 env.js
 my_config.js
