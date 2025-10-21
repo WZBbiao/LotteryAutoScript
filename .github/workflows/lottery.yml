@@ -19,6 +19,11 @@ on:
           - check
           - clear
 
+# 并发控制：同一时间只运行一个实例
+concurrency:
+  group: lottery-script
+  cancel-in-progress: false  # 不取消正在运行的任务，新任务等待
+
 jobs:
   lottery:
     name: 抽奖和中奖检查
