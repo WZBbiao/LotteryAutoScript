@@ -497,12 +497,12 @@ module.exports = Object.freeze({
         APIs: [],
 
         /**
-         * OpenAI ChatGPT API 配置
+         * OpenAI GPT-4 Turbo API 配置
          */
         ai_comments_parm: {
             url: 'https://api.openai.com/v1/chat/completions',
             body: {
-                'model': 'gpt-3.5-turbo',
+                'model': 'gpt-4-turbo',
                 'max_tokens': 100,
                 'temperature': 0.8,
                 'n': 1,
