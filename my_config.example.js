@@ -497,12 +497,13 @@ module.exports = Object.freeze({
         APIs: [],
 
         /**
-         * OpenAI GPT-4 Turbo API 配置
+         * OpenAI GPT-4.1 API 配置
+         * 模型选择：gpt-4.1-mini（推荐，性价比高）或 gpt-4.1（更智能但贵5倍）
          */
         ai_comments_parm: {
             url: 'https://api.openai.com/v1/chat/completions',
             body: {
-                'model': 'gpt-4-turbo',
+                'model': 'gpt-4.1-mini',
                 'max_tokens': 100,
                 'temperature': 0.8,
                 'n': 1,
