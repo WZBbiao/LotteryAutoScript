@@ -343,15 +343,16 @@ module.exports = Object.freeze({
 
         /**
          * AI Chat completions参数
-         * https://learn.microsoft.com/en-us/azure/ai-foundry/openai/reference#chat-completions
+         * OpenAI GPT-4o-mini API 配置
          */
         ai_comments_parm: {
-            /**
-             * /chat/completions
-             */
-            url: '',
-            body: {},
-            prompt: ''
+            url: 'https://api.openai.com/v1/chat/completions',
+            body: {
+                'model': 'gpt-4o-mini',
+                'max_tokens': 100,
+                'temperature': 0.8,
+            },
+            prompt: '请根据以下抽奖动态内容，生成一条自然、简短、符合B站风格的评论。要求：1)不超过30字 2)表达期待和支持 3)不要使用敏感词 4)语气轻松友好。直接输出评论内容，不要任何解释。'
         },
 
         /**
